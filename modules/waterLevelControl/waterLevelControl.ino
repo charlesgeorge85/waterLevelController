@@ -116,7 +116,7 @@ void handleDryRun() {
 
 void loop() {
   manualMode = digitalRead(MANUAL_MODE_SWITCH) == LOW;
-
+Serial.println("Manual Mode Active");
   if (manualMode) {
     Serial.println("Manual Mode Active");
     // Optionally handle pump ON/OFF via buttons here
