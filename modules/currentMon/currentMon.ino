@@ -11,11 +11,11 @@ void setup() {
 }
 
 void loop() {
-  unsigned long start_time = millis();
+  unsigned long i_sam_start_time = millis();
   float sum_squared = 0;
   int sample_count = 0;
 
-  while ((millis() - start_time) < SAMPLE_DURATION) {
+  while ((millis() - i_sam_start_time) < SAMPLE_DURATION) {
     int adc_val = analogRead(ADC_PIN);
     float voltage = (adc_val * VREF) / ADC_RES;
     float ac_component = voltage - VOLTAGE_BIAS;
