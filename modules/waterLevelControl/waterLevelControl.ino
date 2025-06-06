@@ -5,26 +5,30 @@
 #define OHT_EMPTY_PIN       02
 #define UGT_EMPTY_PIN       04
 #define UGT_NOT_EMPTY_PIN   16
+#define ALARM_CLEAR_PIN     17
+#define MANUAL_MODE_SWITCH  05
+
 #define PUMP_CONTROL_PIN    34
-#define CURRENT_SENSOR_PIN  33
 #define BUZZER_PIN          33
-#define ALARM_CLEAR_PIN     27
-#define MANUAL_MODE_SWITCH  14
+
+// ADC Parameters
+#define VREF 3.3            // ADC reference voltage
+#define ADC_RES 4095        // 12-bit ADC
 
 // Current sense
 #define CT_SENS_PIN 36          // ESP32 ADC pin (GPIO36 = ADC1_CH0)
-#define VREF 3.3            // ADC reference voltage
-#define ADC_RES 4095        // 12-bit ADC
+
 #define VOLTAGE_BIAS 1.580  // Measured midpoint voltage (bias)
 #define SENSOR_SENSITIVITY 0.1  // 0.1 V/A (for SCT-013-010)
 #define SAMPLE_DURATION 200  // Sampling time in milliseconds (for 10 cycles at 50Hz)
 
-// Voltage Sense
-#define VAC_SENS_ADC_PIN 13
-
 // Dry-run thresholds (with optional hysteresis)
 #define DRY_RUN_CURRENT_THRESHOLD   2.0  // Trigger below this
 #define DRY_RUN_RECOVERY_THRESHOLD  2.5  // Reset above this
+
+// Voltage Sense
+#define VAC_SENS_ADC_PIN 13
+
 
 // Dry-run delay before checking (after pump ON)
 const unsigned long DRY_RUN_DELAY_MS = 2 * 60 * 1000; // 2 minutes
@@ -63,12 +67,6 @@ void setup() {
 
 bool readSensor(int pin) {
   return digitalRead(pin) == LOW; // Assume LOW means "active"
-}
-
-float readCurrent() {
-  int adcValue = analogRead(CURRENT_SENSOR_PIN);
-  float current = ((float)adcValue / 4095.0) * 5.0; // Simulated conversion
-  return current;
 }
 
 void activatePump() {
@@ -172,6 +170,7 @@ void loop() {
   float rms_voltage = voltMon();
   float power = rms_voltage * rms_current;
   
+  /*
   Serial.print("RMS Current = ");
   Serial.print(rms_current, 3);
   Serial.println(" A");
@@ -183,7 +182,7 @@ void loop() {
   Serial.print("Power = ");
   Serial.print(power, 3);
   Serial.println(" Watts");
-
+*/
   manualMode = digitalRead(MANUAL_MODE_SWITCH) == LOW;
   if (manualMode) {
     Serial.println("Manual Mode Active");
