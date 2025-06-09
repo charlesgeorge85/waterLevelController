@@ -2,13 +2,14 @@
 
 // GPIO Pin Definitions
 #define OHT_FULL_PIN        15
-#define OHT_EMPTY_PIN       02
+#define OHT_EMPTY_PIN       17
 #define UGT_EMPTY_PIN       04
 #define UGT_NOT_EMPTY_PIN   16
 #define ALARM_CLEAR_PIN     17
-#define MANUAL_MODE_SWITCH  05
+#define MANUAL_MODE_SWITCH  18 
 
-#define PUMP_CONTROL_PIN    34
+#define PUMP_CONTROL_PIN    32
+#define PUMP_LED_PIN        02
 #define BUZZER_PIN          33
 
 // ADC Parameters
@@ -31,7 +32,7 @@
 
 
 // Dry-run delay before checking (after pump ON)
-const unsigned long DRY_RUN_DELAY_MS = 2 * 60 * 1000; // 2 minutes
+const unsigned long DRY_RUN_DELAY_MS = 0.5 * 60 * 1000; // 2 minutes
 const unsigned long DRY_RUN_BUZZ_INTERVAL = 30 * 60 * 1000; // 30 mins
 
 // System States
@@ -39,6 +40,7 @@ bool pumpOn = false;
 bool manualMode = false;
 bool dryRunDetected = false;
 bool ugtPreviouslyEmpty = false;
+bool ohtPreviouslyEmpty = false;
 
 unsigned long lastDryRunBuzzTime = 0;
 unsigned long pumpStartTime = 0;
@@ -55,6 +57,7 @@ void setup() {
 
   // Control Outputs
   pinMode(PUMP_CONTROL_PIN, OUTPUT);
+  pinMode(PUMP_LED_PIN, OUTPUT);
   pinMode(BUZZER_PIN, OUTPUT);
 
   // User Inputs
@@ -62,6 +65,7 @@ void setup() {
   pinMode(MANUAL_MODE_SWITCH, INPUT_PULLUP);
 
   digitalWrite(PUMP_CONTROL_PIN, LOW);
+  digitalWrite(PUMP_LED_PIN, LOW);
   digitalWrite(BUZZER_PIN, LOW);
 }
 
@@ -72,8 +76,10 @@ bool readSensor(int pin) {
 void activatePump() {
   if (!pumpOn) {
     digitalWrite(PUMP_CONTROL_PIN, HIGH);
+    digitalWrite(PUMP_LED_PIN, HIGH);
     pumpOn = true;
     pumpStartTime = millis();
+    tone(BUZZER_PIN, 440, 300); // 300 ms sec beep @440Hz
     Serial.println("Pump ON");
   }
 }
@@ -81,36 +87,32 @@ void activatePump() {
 void deactivatePump() {
   if (pumpOn) {
     digitalWrite(PUMP_CONTROL_PIN, LOW);
+    digitalWrite(PUMP_LED_PIN, LOW);
     pumpOn = false;
+    tone(BUZZER_PIN, 2000, 200); // 300 ms sec beep @440Hz
     Serial.println("Pump OFF");
   }
 }
 
 void handleDryRun(float current) {
-  if (!pumpOn) return; // ✅ Only check if pump is running
+  if (!pumpOn and !dryRunDetected) return; // ✅ Only check if pump is running
 
   unsigned long now = millis();
   if (now - pumpStartTime < DRY_RUN_DELAY_MS) {
     // ✅ Wait 2 minutes before checking
     return;
   }
-
-  if (dryRunDetected) {
-    if (current > DRY_RUN_RECOVERY_THRESHOLD) {
-      dryRunDetected = false;
-      Serial.println("Dry run cleared.");
-    }
-  } else {
-    if (current < DRY_RUN_CURRENT_THRESHOLD) {
+   Serial.println("Dry run check initiated...");
+ 
+ if (current < DRY_RUN_CURRENT_THRESHOLD) {
       dryRunDetected = true;
       deactivatePump();
-      Serial.println("Dry run detected.");
+      Serial.println("Dry run detected.....");
     }
-  }
 
   if (dryRunDetected) {
-    if (now - lastDryRunBuzzTime > DRY_RUN_BUZZ_INTERVAL) {
-      tone(BUZZER_PIN, 1000, 2000); // 2 sec beep
+    if (now - lastDryRunBuzzTime < DRY_RUN_BUZZ_INTERVAL) {
+      tone(BUZZER_PIN, 4000, 500); // 0.5 sec beep @ 4KHz
       lastDryRunBuzzTime = now;
     }
 
@@ -184,16 +186,23 @@ void loop() {
   Serial.println(" Watts");
 */
   manualMode = digitalRead(MANUAL_MODE_SWITCH) == LOW;
+  
   if (manualMode) {
     Serial.println("Manual Mode Active");
     // Optionally handle pump ON/OFF via buttons here
+    activatePump();
   } else {
-
+    
     // Read tank sensor states
-    bool ohtEmpty = readSensor(OHT_EMPTY_PIN);
-    bool ohtFull = readSensor(OHT_FULL_PIN);
-    bool ugtEmpty = readSensor(UGT_EMPTY_PIN);
-    bool ugtNotEmpty = readSensor(UGT_NOT_EMPTY_PIN);
+    bool ohtEmpty = digitalRead(OHT_EMPTY_PIN) == HIGH;
+    bool ohtFull = digitalRead(OHT_FULL_PIN) == LOW;
+    bool ugtEmpty = digitalRead(UGT_EMPTY_PIN) == HIGH;
+    bool ugtNotEmpty = digitalRead(UGT_NOT_EMPTY_PIN) == LOW;
+
+    Serial.printf("ohtEmpty: %s\n", ohtEmpty ? "true" : "false");  // Outputs: Status: true
+    Serial.printf("ohtFull: %s\n", ohtFull ? "true" : "false");  // Outputs: Status: true
+    Serial.printf("ugtEmpty: %s\n", ugtEmpty ? "true" : "false");  // Outputs: Status: true
+    Serial.printf("ugtNotEmpty: %s\n", ugtNotEmpty ? "true" : "false");  // Outputs: Status: true
 
     // Track UGT history
     if (ugtEmpty) {
@@ -201,13 +210,23 @@ void loop() {
       deactivatePump(); // Safety: prevent dry run
     }
 
-    if (ugtPreviouslyEmpty && ugtNotEmpty) {
+    if (ugtPreviouslyEmpty && ugtNotEmpty && !ugtEmpty) {
       ugtPreviouslyEmpty = false; // Reset lock
+    }
+
+    // Track OHT History
+
+    if (ohtEmpty) {
+      ohtPreviouslyEmpty = true;
+    }
+
+    if (ohtPreviouslyEmpty && ohtFull && !ohtEmpty) {
+      ohtPreviouslyEmpty = false; // Reset lock
     }
 
     // Normal operation
     if (!manualMode && !dryRunDetected && !ugtPreviouslyEmpty) {
-      if (ohtEmpty && !ugtEmpty && !ohtFull) {
+      if (ohtPreviouslyEmpty && !ugtEmpty ) {
         activatePump();
       } else {
         deactivatePump();
