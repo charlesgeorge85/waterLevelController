@@ -2,15 +2,20 @@
 
 // GPIO Pin Definitions
 #define OHT_FULL_PIN        15
-#define OHT_EMPTY_PIN       17
-#define UGT_EMPTY_PIN       04
+#define OHT_EMPTY_PIN       04
 #define UGT_NOT_EMPTY_PIN   16
-#define ALARM_CLEAR_PIN     17
+#define UGT_EMPTY_PIN       17
+
+#define ALARM_CLEAR_PIN     05
 #define MANUAL_MODE_SWITCH  18 
 
 #define PUMP_CONTROL_PIN    32
 #define PUMP_LED_PIN        02
 #define BUZZER_PIN          33
+
+#define LED_ALRM_PIN        14
+#define LED_PUMP_PIN        27
+#define LED_PWR_PIN         26
 
 // ADC Parameters
 #define VREF 3.3            // ADC reference voltage
@@ -36,6 +41,7 @@ const unsigned long DRY_RUN_DELAY_MS = 0.5 * 60 * 1000; // 2 minutes
 const unsigned long DRY_RUN_BUZZ_INTERVAL = 30 * 60 * 1000; // 30 mins
 
 // System States
+bool toggle = false;
 bool pumpOn = false;
 bool manualMode = false;
 bool dryRunDetected = false;
@@ -60,6 +66,10 @@ void setup() {
   pinMode(PUMP_LED_PIN, OUTPUT);
   pinMode(BUZZER_PIN, OUTPUT);
 
+  pinMode(LED_ALRM_PIN, OUTPUT);
+  pinMode(LED_PUMP_PIN, OUTPUT);
+  pinMode(LED_PWR_PIN, OUTPUT);
+
   // User Inputs
   pinMode(ALARM_CLEAR_PIN, INPUT_PULLUP);
   pinMode(MANUAL_MODE_SWITCH, INPUT_PULLUP);
@@ -67,6 +77,12 @@ void setup() {
   digitalWrite(PUMP_CONTROL_PIN, LOW);
   digitalWrite(PUMP_LED_PIN, LOW);
   digitalWrite(BUZZER_PIN, LOW);
+  
+  digitalWrite(LED_ALRM_PIN, LOW);
+  digitalWrite(LED_PUMP_PIN, LOW);
+  digitalWrite(LED_PWR_PIN, LOW);
+
+
 }
 
 bool readSensor(int pin) {
@@ -89,8 +105,9 @@ void deactivatePump() {
     digitalWrite(PUMP_CONTROL_PIN, LOW);
     digitalWrite(PUMP_LED_PIN, LOW);
     pumpOn = false;
-    tone(BUZZER_PIN, 2000, 200); // 300 ms sec beep @440Hz
     Serial.println("Pump OFF");
+    tone(BUZZER_PIN, 2000, 200); // 300 ms sec beep @440Hz
+    
   }
 }
 
@@ -111,15 +128,15 @@ void handleDryRun(float current) {
     }
 
   if (dryRunDetected) {
-    if (now - lastDryRunBuzzTime < DRY_RUN_BUZZ_INTERVAL) {
-      tone(BUZZER_PIN, 4000, 500); // 0.5 sec beep @ 4KHz
-      lastDryRunBuzzTime = now;
-    }
+    
+      tone(BUZZER_PIN, 1000, 100); // 0.1 sec beep @ 1KHz
+      digitalWrite(LED_ALRM_PIN, HIGH);
+    
 
     if (digitalRead(ALARM_CLEAR_PIN) == LOW) {
       dryRunDetected = false;
-      lastDryRunBuzzTime = 0;
       Serial.println("Dry-run alarm cleared.");
+      digitalWrite(LED_ALRM_PIN, LOW);
     }
   }
 }
@@ -186,6 +203,12 @@ void loop() {
   Serial.println(" Watts");
 */
   manualMode = digitalRead(MANUAL_MODE_SWITCH) == LOW;
+  toggle = !toggle;
+
+  
+  //digitalWrite(LED_ALRM_PIN, toggle);
+  digitalWrite(LED_PUMP_PIN, toggle);
+  digitalWrite(LED_PWR_PIN, toggle);
   
   if (manualMode) {
     Serial.println("Manual Mode Active");
