@@ -13,9 +13,14 @@
 #define PUMP_LED_PIN        02
 #define BUZZER_PIN          33
 
-#define LED_ALRM_PIN        14
-#define LED_PUMP_PIN        27
-#define LED_PWR_PIN         26
+
+//pin 14 Red LED
+//pin 27 Yellow LED
+//pin 26 Green LED
+
+#define LED_ALRM_PIN        27
+#define LED_PUMP_PIN        26
+#define LED_PWR_PIN         14
 
 // ADC Parameters
 #define VREF 3.3            // ADC reference voltage
@@ -29,7 +34,8 @@
 #define SAMPLE_DURATION 200  // Sampling time in milliseconds (for 10 cycles at 50Hz)
 
 // Dry-run thresholds (with optional hysteresis)
-#define DRY_RUN_CURRENT_THRESHOLD   2.0  // Trigger below this
+// Measured current when pump normal working is 1.27A, so set the dry run current threshold as 0.8A
+#define DRY_RUN_CURRENT_THRESHOLD   0.8  // Trigger below this
 #define DRY_RUN_RECOVERY_THRESHOLD  2.5  // Reset above this
 
 // Voltage Sense
@@ -93,6 +99,7 @@ void activatePump() {
   if (!pumpOn) {
     digitalWrite(PUMP_CONTROL_PIN, HIGH);
     digitalWrite(PUMP_LED_PIN, HIGH);
+    digitalWrite(LED_PUMP_PIN, HIGH);
     pumpOn = true;
     pumpStartTime = millis();
     tone(BUZZER_PIN, 440, 300); // 300 ms sec beep @440Hz
@@ -104,6 +111,7 @@ void deactivatePump() {
   if (pumpOn) {
     digitalWrite(PUMP_CONTROL_PIN, LOW);
     digitalWrite(PUMP_LED_PIN, LOW);
+    digitalWrite(LED_PUMP_PIN, LOW);
     pumpOn = false;
     Serial.println("Pump OFF");
     tone(BUZZER_PIN, 2000, 200); // 300 ms sec beep @440Hz
@@ -130,7 +138,7 @@ void handleDryRun(float current) {
   if (dryRunDetected) {
     
       tone(BUZZER_PIN, 1000, 100); // 0.1 sec beep @ 1KHz
-      digitalWrite(LED_ALRM_PIN, HIGH);
+      digitalWrite(LED_ALRM_PIN, toggle);
     
 
     if (digitalRead(ALARM_CLEAR_PIN) == LOW) {
@@ -207,8 +215,7 @@ void loop() {
 
   
   //digitalWrite(LED_ALRM_PIN, toggle);
-  digitalWrite(LED_PUMP_PIN, toggle);
-  digitalWrite(LED_PWR_PIN, toggle);
+  digitalWrite(LED_PWR_PIN, HIGH);
   
   if (manualMode) {
     Serial.println("Manual Mode Active");
@@ -221,12 +228,12 @@ void loop() {
     bool ohtFull = digitalRead(OHT_FULL_PIN) == LOW;
     bool ugtEmpty = digitalRead(UGT_EMPTY_PIN) == HIGH;
     bool ugtNotEmpty = digitalRead(UGT_NOT_EMPTY_PIN) == LOW;
-
+/*
     Serial.printf("ohtEmpty: %s\n", ohtEmpty ? "true" : "false");  // Outputs: Status: true
     Serial.printf("ohtFull: %s\n", ohtFull ? "true" : "false");  // Outputs: Status: true
     Serial.printf("ugtEmpty: %s\n", ugtEmpty ? "true" : "false");  // Outputs: Status: true
     Serial.printf("ugtNotEmpty: %s\n", ugtNotEmpty ? "true" : "false");  // Outputs: Status: true
-
+*/
     // Track UGT history
     if (ugtEmpty) {
       ugtPreviouslyEmpty = true;
