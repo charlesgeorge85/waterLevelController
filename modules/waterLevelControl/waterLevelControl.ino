@@ -1,4 +1,7 @@
 #include <Arduino.h>
+#include <WiFi.h>
+#include "esp_wifi.h"
+#include "esp_bt.h"
 
 // GPIO Pin Definitions
 #define OHT_FULL_PIN        15
@@ -58,9 +61,19 @@ unsigned long lastDryRunBuzzTime = 0;
 unsigned long pumpStartTime = 0;
 
 void setup() {
+   // setting the CPU clock to 80MHz to reduce power consumption, default value is 240MHz
+   setCpuFrequencyMhz(80);
+
   Serial.begin(115200);
   analogReadResolution(12);  // ESP32 default is 12-bit
   
+  //Turn off WiFi
+  WiFi.mode(WIFI_OFF);
+  esp_wifi_stop();
+
+  //Turn off Bluetooth
+  esp_bt_controller_disable();
+
   // Sensor Inputs
   pinMode(OHT_FULL_PIN, INPUT);
   pinMode(OHT_EMPTY_PIN, INPUT);
