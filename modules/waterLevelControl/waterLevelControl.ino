@@ -50,6 +50,7 @@ const unsigned long DRY_RUN_DELAY_MS = 0.5 * 60 * 1000; // 2 minutes
 const unsigned long DRY_RUN_BUZZ_INTERVAL = 30 * 60 * 1000; // 30 mins
 
 // System States
+bool manualModeFlg = false;
 bool toggle = false;
 bool pumpOn = false;
 bool manualMode = false;
@@ -225,17 +226,19 @@ void loop() {
 */
   manualMode = digitalRead(MANUAL_MODE_SWITCH) == LOW;
   toggle = !toggle;
-
-  
-  //digitalWrite(LED_ALRM_PIN, toggle);
-  digitalWrite(LED_PWR_PIN, HIGH);
   
   if (manualMode) {
-    Serial.println("Manual Mode Active");
+    //Serial.println("Manual Mode Active");
     // Optionally handle pump ON/OFF via buttons here
-    activatePump();
+    if (manualModeFlg = false) {
+      activatePump();
+      manualModeFlg = true;
+    }
+    digitalWrite(LED_PWR_PIN, toggle);
   } else {
     
+    manualModeFlg = false; // 0 is automatic mode
+    digitalWrite(LED_PWR_PIN, HIGH);
     // Read tank sensor states
     bool ohtEmpty = digitalRead(OHT_EMPTY_PIN) == HIGH;
     bool ohtFull = digitalRead(OHT_FULL_PIN) == LOW;
