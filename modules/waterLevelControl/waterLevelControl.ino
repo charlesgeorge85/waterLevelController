@@ -39,7 +39,7 @@
 // Dry-run thresholds (with optional hysteresis)
 // Measured current when pump normal working is 1.27A, so set the dry run current threshold as 0.8A
 #define DRY_RUN_CURRENT_THRESHOLD   0.8  // Trigger below this
-#define DRY_RUN_RECOVERY_THRESHOLD  2.5  // Reset above this
+#define DRY_RUN_RECOVERY_THRESHOLD  1.1  // Reset above this
 
 // Voltage Sense
 #define VAC_SENS_ADC_PIN 13
@@ -230,7 +230,7 @@ void loop() {
   if (manualMode) {
     //Serial.println("Manual Mode Active");
     // Optionally handle pump ON/OFF via buttons here
-    if (manualModeFlg = false) {
+    if (!manualModeFlg) {
       activatePump();
       manualModeFlg = true;
     }
