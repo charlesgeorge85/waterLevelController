@@ -4236,6 +4236,16 @@
 	)
 	(wire
 		(pts
+			(xy 246.38 24.13) (xy 246.38 30.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "02589485-ce5d-4056-84b8-cff2ab39546d")
+	)
+	(wire
+		(pts
 			(xy 229.87 39.37) (xy 246.38 39.37)
 		)
 		(stroke
@@ -4263,16 +4273,6 @@
 			(type default)
 		)
 		(uuid "06b8b67c-e209-45a5-b155-b6fd725096e7")
-	)
-	(wire
-		(pts
-			(xy 246.38 24.13) (xy 246.38 30.48)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "06cb3ab5-153c-43b6-bbef-2234871e0beb")
 	)
 	(wire
 		(pts
@@ -4596,16 +4596,6 @@
 	)
 	(wire
 		(pts
-			(xy 246.38 39.37) (xy 246.38 33.02)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3849c9f0-adfe-4430-bca3-3ae865879101")
-	)
-	(wire
-		(pts
 			(xy 132.08 118.11) (xy 144.78 118.11)
 		)
 		(stroke
@@ -4763,6 +4753,16 @@
 			(type default)
 		)
 		(uuid "4e815b17-cf43-4101-abce-96b9c4bc4d60")
+	)
+	(wire
+		(pts
+			(xy 246.38 33.02) (xy 246.38 39.37)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4f2f4b21-9c7c-47cc-8632-ded38c8a95cb")
 	)
 	(wire
 		(pts
@@ -7913,7 +7913,7 @@
 				)
 			)
 		)
-		(property "Footprint" "TerminalBlock_MetzConnect:TerminalBlock_MetzConnect_Type011_RT05503HBLC_1x03_P5.00mm_Horizontal"
+		(property "Footprint" "Connector_Phoenix_MC:PhoenixContact_MCV_1,5_3-G-3.81_1x03_P3.81mm_Vertical"
 			(at 20.32 30.48 0)
 			(effects
 				(font
@@ -8806,16 +8806,16 @@
 	)
 	(symbol
 		(lib_id "Connector:Conn_01x05_Pin")
-		(at 80.01 170.18 180)
+		(at 80.01 170.18 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "79f4021d-6a1f-4318-9233-a41f0f9819db")
 		(property "Reference" "J6"
-			(at 81.28 168.9099 0)
+			(at 81.28 171.4501 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8824,7 +8824,7 @@
 			)
 		)
 		(property "Value" "Conn_01x05_Pin"
-			(at 81.28 171.4499 0)
+			(at 81.28 168.9101 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8832,7 +8832,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Connector_Samtec_HPM_THT:Samtec_HPM-05-01-x-S_Straight_1x05_Pitch5.08mm"
+		(property "Footprint" "Connector_Phoenix_MC:PhoenixContact_MCV_1,5_5-G-3.81_1x05_P3.81mm_Vertical"
 			(at 80.01 170.18 0)
 			(effects
 				(font
@@ -10058,7 +10058,8 @@
 	)
 	(symbol
 		(lib_id "Connector:Conn_01x02_Pin")
-		(at 251.46 33.02 180)
+		(at 251.46 30.48 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10066,7 +10067,7 @@
 		(dnp no)
 		(uuid "9b186094-7a57-4be2-9992-639ee739f06d")
 		(property "Reference" "J3"
-			(at 253.492 38.1 0)
+			(at 253.492 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10074,15 +10075,15 @@
 			)
 		)
 		(property "Value" "TerminalBlock"
-			(at 254.762 35.814 0)
+			(at 254.762 27.686 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "TerminalBlock:TerminalBlock_Altech_AK300-2_P5.00mm"
-			(at 251.46 33.02 0)
+		(property "Footprint" "Connector_Phoenix_MC:PhoenixContact_MCV_1,5_2-G-3.81_1x02_P3.81mm_Vertical"
+			(at 251.46 30.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10091,7 +10092,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 251.46 33.02 0)
+			(at 251.46 30.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10100,7 +10101,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated"
-			(at 251.46 33.02 0)
+			(at 251.46 30.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
