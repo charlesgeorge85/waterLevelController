@@ -8,7 +8,7 @@ The system is designed to automatically control a water pump to transfer water f
 
 - Preventing pump operation when UGT is empty (dry run).
 - Automating pump ON/OFF based on OHT and UGT water levels.
-- Providing manual override and web-based visibility/control.
+- Providing manual mode, switch is set to manual, in manual mode, pump will be 'on', so thts pump can be controlled via main power switch
 
 ## 1.1 Tank Level Thresholds
 
@@ -40,12 +40,11 @@ If deactivation is due to UGT low level, the pump will only reactivate once UGT 
 ### 2.3 Dry Run Detection & Handling
 
 - Dry-run is detected via motor current using a Current Transformer (CT).
-- For a 0.5 HP motor, current < 2A indicates a dry run.
+- For a 0.25 HP motor, current < 0.8 A indicates a dry run, during normal run, the measured current is 1.27A
 - On dry run:
-  - A buzzer alerts every 30 minutes.
-  - Alarm can be cleared with a manual switch.
-  - Pump enters manual mode (can be toggled via control switch).
-
+  - A buzzer alerts.
+  - Alarm can be cleared with a Alarm reset switch
+  
 ## 3. Hardware Implementation
 
 - **Controller**: ESP32
@@ -54,13 +53,13 @@ If deactivation is due to UGT low level, the pump will only reactivate once UGT 
   - Motor control (auto/manual)
   - Current sensing
   - Configurable dry-run threshold
-  - Web UI for:
+  - Web UI for (future Plan):
     - Displaying water levels
     - Manual motor control
     - Viewing current consumption
     - Threshold configuration
 
-## 4. Web UI
+## 4. Web UI(future Plan)
 
 A web-based interface hosted on ESP32 allows real-time visualization and control of the pump system.
 
