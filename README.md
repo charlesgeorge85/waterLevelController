@@ -66,6 +66,7 @@ A web-based interface hosted on ESP32 allows real-time visualization and control
 ## 5. ESP32 Devkit V1 details
 
 ![ESP32 Pinout](images/devkitv1.jpg)
+
 [ESP32 DOIT DevKit V1 Board Details](https://www.espboards.dev/esp32/esp32doit-devkit-v1/)
 
 ---
