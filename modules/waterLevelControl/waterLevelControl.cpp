@@ -1,5 +1,19 @@
 #include <Arduino.h>
 #include "board.h"
+#define WLC_DEBUG
+
+// Enable debug logs by defining WLC_DEBUG in build flags.
+#ifdef WLC_DEBUG
+#define DBG_BEGIN(baud) Serial.begin(baud)
+#define DBG_PRINT(...) Serial.print(__VA_ARGS__)
+#define DBG_PRINTLN(...) Serial.println(__VA_ARGS__)
+#define DBG_PRINTF(...) Serial.printf(__VA_ARGS__)
+#else
+#define DBG_BEGIN(baud) do {} while (0)
+#define DBG_PRINT(...) do {} while (0)
+#define DBG_PRINTLN(...) do {} while (0)
+#define DBG_PRINTF(...) do {} while (0)
+#endif
 
 // System States
 bool toggle = false;
@@ -13,7 +27,7 @@ unsigned long lastDryRunBuzzTime = 0;
 unsigned long pumpStartTime = 0;
 
 void setup() {
-  Serial.begin(115200);
+  DBG_BEGIN(115200);
   analogReadResolution(12);  // ESP32 default is 12-bit
   
   // Sensor Inputs
@@ -58,7 +72,7 @@ void activatePump() {
     pumpOn = true;
     pumpStartTime = millis();
     tone(BUZZER_PIN, 440, 300); // 300 ms sec beep @440Hz
-    Serial.println("Pump ON");
+    DBG_PRINTLN("Pump ON");
   }
 }
 
@@ -68,7 +82,7 @@ void deactivatePump() {
     digitalWrite(PUMP_LED_PIN, LOW);
     digitalWrite(LED_PUMP_PIN, LOW);
     pumpOn = false;
-    Serial.println("Pump OFF");
+    DBG_PRINTLN("Pump OFF");
     tone(BUZZER_PIN, 2000, 200); // 300 ms sec beep @440Hz
     
   }
@@ -82,23 +96,23 @@ void handleDryRun(float current) {
     // ✅ Wait 2 minutes before checking
     return;
   }
-   Serial.println("Dry run check initiated...");
+   DBG_PRINTLN("Dry run check initiated...");
  
  if (current < DRY_RUN_CURRENT_THRESHOLD) {
       dryRunDetected = true;
       deactivatePump();
-      Serial.println("Dry run detected.....");
+   DBG_PRINTLN("Dry run detected.....");
     }
 
   if (dryRunDetected) {
-    
+      //deactivatePump(); 
       tone(BUZZER_PIN, 1000, 100); // 0.1 sec beep @ 1KHz
       digitalWrite(LED_ALRM_PIN, toggle);
     
 
     if (digitalRead(ALARM_CLEAR_PIN) == LOW) {
       dryRunDetected = false;
-      Serial.println("Dry-run alarm cleared.");
+      DBG_PRINTLN("Dry-run alarm cleared.");
       digitalWrite(LED_ALRM_PIN, LOW);
     }
   }
@@ -157,28 +171,32 @@ void loop() {
   float power = rms_voltage * rms_current;
   
   
-  Serial.print("I = ");
-  Serial.print(rms_current, 3);
-  Serial.println(" A");
+  DBG_PRINT("I = ");
+  DBG_PRINT(rms_current, 3);
+  DBG_PRINTLN(" A");
   
-  Serial.print("V = ");
-  Serial.print(rms_voltage, 2);
-  Serial.println(" V");
+  DBG_PRINT("V = ");
+  DBG_PRINT(rms_voltage, 2);
+  DBG_PRINTLN(" V");
   
-  Serial.print("Power = ");
-  Serial.print(power, 3);
-  Serial.println(" Watts");
+  DBG_PRINT("Power = ");
+  DBG_PRINT(power, 3);
+  DBG_PRINTLN(" Watts");
 
-  Serial.println(" ------------------------------------");
+  DBG_PRINTLN(" ------------------------------------");
 
   manualMode = digitalRead(MANUAL_MODE_SWITCH) == LOW;
   toggle = !toggle;
 
-  //digitalWrite(LED_ALRM_PIN, toggle);
-  digitalWrite(LED_PWR_PIN, HIGH);
+  //Voltage Good Indication
+  if (rms_voltage > 200.0) 
+    digitalWrite(LED_PWR_PIN, HIGH);
+  else
+    digitalWrite(LED_PWR_PIN, toggle); // Blink if voltage is low
+  
   
   if (manualMode) {
-    Serial.println("Manual Mode Active");
+    DBG_PRINTLN("Manual Mode Active");
     // Optionally handle pump ON/OFF via buttons here
     activatePump();
   } else {
@@ -189,10 +207,10 @@ void loop() {
     bool ugtEmpty = digitalRead(UGT_EMPTY_PIN) == HIGH;
     bool ugtNotEmpty = digitalRead(UGT_NOT_EMPTY_PIN) == LOW;
 
-    Serial.printf("ohtEmpty: %s\n", ohtEmpty ? "true" : "false");  // Outputs: Status: true
-    Serial.printf("ohtFull: %s\n", ohtFull ? "true" : "false");  // Outputs: Status: true
-    Serial.printf("ugtEmpty: %s\n", ugtEmpty ? "true" : "false");  // Outputs: Status: true
-    Serial.printf("ugtNotEmpty: %s\n", ugtNotEmpty ? "true" : "false");  // Outputs: Status: true
+    DBG_PRINTF("ohtEmpty: %s\n", ohtEmpty ? "true" : "false");  // Outputs: Status: true
+    DBG_PRINTF("ohtFull: %s\n", ohtFull ? "true" : "false");  // Outputs: Status: true
+    DBG_PRINTF("ugtEmpty: %s\n", ugtEmpty ? "true" : "false");  // Outputs: Status: true
+    DBG_PRINTF("ugtNotEmpty: %s\n", ugtNotEmpty ? "true" : "false");  // Outputs: Status: true
 
 
     // Track UGT history
