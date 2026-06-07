@@ -109,9 +109,9 @@ float voltMon()
 {
  // Voltage Sampling
   int adc_val = analogRead(VAC_SENS_ADC_PIN); // 0 to 4095
-  float voltageSense = (adc_val / 4095.0) * 3.3; // Convert to volts
+  float voltageSense = (adc_val / ADC_RES) * VREF; // Convert to volts
   //scaling correction by board measurement
-  float voltMains = 242*voltageSense/2.98;
+  float voltMains = (float)VAC_SCALING_FACTOR * voltageSense;
   return voltMains;
 }
 
@@ -121,11 +121,13 @@ float currentMon()
   unsigned long i_sam_start_time = millis();
   float sum_squared = 0;
   int sample_count = 0;
+  float ac_component = 0;
 
   while ((millis() - i_sam_start_time) < SAMPLE_DURATION) {
+
     int adc_val = analogRead(CT_SENS_PIN);
-    float voltage = (adc_val * VREF) / ADC_RES;
-    float ac_component = voltage - VOLTAGE_BIAS;
+    float voltage =(adc_val / ADC_RES) * VREF; // Convert to volts
+    ac_component = voltage - VOLTAGE_BIAS;
 
     sum_squared += ac_component * ac_component;
     sample_count++;
@@ -141,9 +143,11 @@ float currentMon()
   float rms_current = rms_voltage / SENSOR_SENSITIVITY;
 
   //scaling Correction, bu board 
-  rms_current *= 0.258/3.34;
+  rms_current *= 225.00/470.00;
+  
 
-  return(rms_current);
+  return(rms_current-.0120); // Subtract bias based on measurements with no load. Adjust as needed.
+  //return(ac_component);
 }
 
 void loop() {
@@ -152,23 +156,24 @@ void loop() {
   float rms_voltage = voltMon();
   float power = rms_voltage * rms_current;
   
-  /*
-  Serial.print("RMS Current = ");
+  
+  Serial.print("I = ");
   Serial.print(rms_current, 3);
   Serial.println(" A");
   
-  Serial.print("Vrms = ");
-  Serial.print(rms_voltage, 3);
+  Serial.print("V = ");
+  Serial.print(rms_voltage, 2);
   Serial.println(" V");
-
+  
   Serial.print("Power = ");
   Serial.print(power, 3);
   Serial.println(" Watts");
-*/
+
+  Serial.println(" ------------------------------------");
+
   manualMode = digitalRead(MANUAL_MODE_SWITCH) == LOW;
   toggle = !toggle;
 
-  
   //digitalWrite(LED_ALRM_PIN, toggle);
   digitalWrite(LED_PWR_PIN, HIGH);
   
@@ -183,12 +188,13 @@ void loop() {
     bool ohtFull = digitalRead(OHT_FULL_PIN) == LOW;
     bool ugtEmpty = digitalRead(UGT_EMPTY_PIN) == HIGH;
     bool ugtNotEmpty = digitalRead(UGT_NOT_EMPTY_PIN) == LOW;
-/*
+
     Serial.printf("ohtEmpty: %s\n", ohtEmpty ? "true" : "false");  // Outputs: Status: true
     Serial.printf("ohtFull: %s\n", ohtFull ? "true" : "false");  // Outputs: Status: true
     Serial.printf("ugtEmpty: %s\n", ugtEmpty ? "true" : "false");  // Outputs: Status: true
     Serial.printf("ugtNotEmpty: %s\n", ugtNotEmpty ? "true" : "false");  // Outputs: Status: true
-*/
+
+
     // Track UGT history
     if (ugtEmpty) {
       ugtPreviouslyEmpty = true;

@@ -1,6 +1,8 @@
 #ifndef BOARD_H
 #define BOARD_H
 
+#ifndef HW_V2
+#define HW_V2
 // Select hardware profile at compile time:
 // - Define HW_V2 for new hardware
 // - If HW_V2 is not defined, old hardware mapping is used
@@ -27,12 +29,12 @@
 
 // ADC Parameters (HW_V2)
 #define VREF 3.3
-#define ADC_RES 4095
+#define ADC_RES 4095.0
 
 // Current sense (HW_V2)
 #define CT_SENS_PIN 36
 
-#define VOLTAGE_BIAS 1.580
+#define VOLTAGE_BIAS 1.480
 #define SENSOR_SENSITIVITY 0.1
 #define SAMPLE_DURATION 200
 
@@ -42,6 +44,7 @@
 
 // Voltage Sense (HW_V2)
 #define VAC_SENS_ADC_PIN 35
+#define VAC_SCALING_FACTOR 237.0/3.1 // Correction factor based on board hw_v2 measurements
 
 // Dry-run timing (HW_V2)
 const unsigned long DRY_RUN_DELAY_MS = 0.5 * 60 * 1000;
@@ -84,11 +87,12 @@ const unsigned long DRY_RUN_BUZZ_INTERVAL = 30 * 60 * 1000;
 
 // Voltage Sense (OLD HW)
 #define VAC_SENS_ADC_PIN 13
+#define VAC_SCALING_FACTOR 242/2.98 // Correction factor based on board measurements
 
 // Dry-run timing (OLD HW)
 const unsigned long DRY_RUN_DELAY_MS = 0.5 * 60 * 1000;
 const unsigned long DRY_RUN_BUZZ_INTERVAL = 30 * 60 * 1000;
 
 #endif
-
+#endif
 #endif
