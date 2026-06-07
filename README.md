@@ -63,6 +63,10 @@ If deactivation is due to UGT low level, the pump will only reactivate once UGT 
 
 A web-based interface hosted on ESP32 allows real-time visualization and control of the pump system.
 
+##5. ESP32 Devkit V1 details
+![ESP32 Pinout](images/devkitv1.jpg)
+[ESP32 DOIT DevKit V1 Board Details](https://www.espboards.dev/esp32/esp32doit-devkit-v1/)
+
 ---
 
 ### Author
