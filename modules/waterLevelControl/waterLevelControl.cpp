@@ -23,6 +23,11 @@ bool dryRunDetected = false;
 bool ugtPreviouslyEmpty = false;
 bool ohtPreviouslyEmpty = false;
 
+bool ohtEmptyState = false;
+bool ohtFullState = false;
+bool ugtEmptyState = false;
+bool ugtNotEmptyState = false;
+
 unsigned long lastDryRunBuzzTime = 0;
 unsigned long pumpStartTime = 0;
 
@@ -56,7 +61,6 @@ void setup() {
   digitalWrite(LED_ALRM_PIN, LOW);
   digitalWrite(LED_PUMP_PIN, LOW);
   digitalWrite(LED_PWR_PIN, LOW);
-
 
 }
 
@@ -165,12 +169,10 @@ float currentMon()
 }
 
 void loop() {
-  
   float rms_current = currentMon();
   float rms_voltage = voltMon();
   float power = rms_voltage * rms_current;
-  
-  
+
   DBG_PRINT("I = ");
   DBG_PRINT(rms_current, 3);
   DBG_PRINTLN(" A");
@@ -188,8 +190,13 @@ void loop() {
   manualMode = digitalRead(MANUAL_MODE_SWITCH) == LOW;
   toggle = !toggle;
 
+  ohtEmptyState = digitalRead(OHT_EMPTY_PIN) == HIGH;
+  ohtFullState = digitalRead(OHT_FULL_PIN) == LOW;
+  ugtEmptyState = digitalRead(UGT_EMPTY_PIN) == HIGH;
+  ugtNotEmptyState = digitalRead(UGT_NOT_EMPTY_PIN) == LOW;
+
   //Voltage Good Indication
-  if (rms_voltage > 200.0) 
+  if (rms_voltage > 150.0) 
     digitalWrite(LED_PWR_PIN, HIGH);
   else
     digitalWrite(LED_PWR_PIN, toggle); // Blink if voltage is low
@@ -197,45 +204,39 @@ void loop() {
   
   if (manualMode) {
     DBG_PRINTLN("Manual Mode Active");
-    // Optionally handle pump ON/OFF via buttons here
     activatePump();
+    handleDryRun(rms_current);
   } else {
     
-    // Read tank sensor states
-    bool ohtEmpty = digitalRead(OHT_EMPTY_PIN) == HIGH;
-    bool ohtFull = digitalRead(OHT_FULL_PIN) == LOW;
-    bool ugtEmpty = digitalRead(UGT_EMPTY_PIN) == HIGH;
-    bool ugtNotEmpty = digitalRead(UGT_NOT_EMPTY_PIN) == LOW;
-
-    DBG_PRINTF("ohtEmpty: %s\n", ohtEmpty ? "true" : "false");  // Outputs: Status: true
-    DBG_PRINTF("ohtFull: %s\n", ohtFull ? "true" : "false");  // Outputs: Status: true
-    DBG_PRINTF("ugtEmpty: %s\n", ugtEmpty ? "true" : "false");  // Outputs: Status: true
-    DBG_PRINTF("ugtNotEmpty: %s\n", ugtNotEmpty ? "true" : "false");  // Outputs: Status: true
+    DBG_PRINTF("ohtEmpty: %s\n", ohtEmptyState ? "true" : "false");
+    DBG_PRINTF("ohtFull: %s\n", ohtFullState ? "true" : "false");
+    DBG_PRINTF("ugtEmpty: %s\n", ugtEmptyState ? "true" : "false");
+    DBG_PRINTF("ugtNotEmpty: %s\n", ugtNotEmptyState ? "true" : "false");
 
 
     // Track UGT history
-    if (ugtEmpty) {
+    if (ugtEmptyState) {
       ugtPreviouslyEmpty = true;
       deactivatePump(); // Safety: prevent dry run
     }
 
-    if (ugtPreviouslyEmpty && ugtNotEmpty && !ugtEmpty) {
+    if (ugtPreviouslyEmpty && ugtNotEmptyState && !ugtEmptyState) {
       ugtPreviouslyEmpty = false; // Reset lock
     }
 
     // Track OHT History
 
-    if (ohtEmpty) {
+    if (ohtEmptyState) {
       ohtPreviouslyEmpty = true;
     }
 
-    if (ohtPreviouslyEmpty && ohtFull && !ohtEmpty) {
+    if (ohtPreviouslyEmpty && ohtFullState && !ohtEmptyState) {
       ohtPreviouslyEmpty = false; // Reset lock
     }
 
     // Normal operation
     if (!manualMode && !dryRunDetected && !ugtPreviouslyEmpty) {
-      if (ohtPreviouslyEmpty && !ugtEmpty ) {
+      if (ohtPreviouslyEmpty && !ugtEmptyState ) {
         activatePump();
       } else {
         deactivatePump();
@@ -243,10 +244,10 @@ void loop() {
     } else {
       deactivatePump();
     }
-  }
 
-  // Dry run check (only if pump is ON & delay passed)
-  handleDryRun(rms_current);
+    // Dry run check (only if pump is ON & delay passed)
+    handleDryRun(rms_current);
+  }
 
   delay(1000);
 }
